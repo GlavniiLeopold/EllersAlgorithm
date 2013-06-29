@@ -10,165 +10,166 @@ import java.util.Random;
  * */
 
 public class EllersAlgorithm {
-		
+
 	int w, h;
 	private final boolean toConsole;
 	private final Random randomizer = new Random();
 	private final Cell[] cells;
-		
+
 	public EllersAlgorithm() {
 		this(10, 10);
-	} 		
-	
-	public EllersAlgorithm(int w, int h) {  
+	}
+
+	public EllersAlgorithm(final int w, final int h) {
 		this(w, h, true);
 	}
-	
-	public EllersAlgorithm(int w, int h, boolean toConsole) { 
+
+	public EllersAlgorithm(final int w, final int h, final boolean toConsole) {
 		this.w = w;
 		this.h = h;
 		this.toConsole = toConsole;
-		this.cells = new Cell[w];
-		
+		cells = new Cell[w];
+
 		/* Create the first row. No cells will be members of any set */
 		for(int i = 0; i < w; i++)
 			cells[i] = new Cell(i);
-		
+
 		outRoof();
-		
-		for(int position = 0; position < h; position++) {
-			/* Join any cells not members of a set to their own unique set */
-			fill(cells);
-			/* Create right-walls, moving from left to right */
-			merge(cells);
-			/* Create bottom-walls, moving from left to right */
-			floor(cells);
-			if(h-position != 1) {
-				/* 5.A */
-				cells[cells.length-1].setRight(true);
-				out();
-				next(cells);
-			}
-			else {
-				/* 5.B */
-				end(cells);
-				out();
-			}
-		}
 	}
-	
-	private void merge(Cell current, Cell next) {  
-		List<Cell> currentSet = current.getSet();
-		List<Cell> nextSet = next.getSet();
-		for(Cell nCell : nextSet) {  
+
+	private void merge(final Cell current, final Cell next) {
+		final List<Cell> currentSet = current.getSet();
+		final List<Cell> nextSet = next.getSet();
+		for(final Cell nCell : nextSet) {
 			currentSet.add(nCell);
 			nCell.setSet(currentSet);
 		}
 	}
-	
+
 	private void outRoof() {
-		if(!toConsole) 
+		if(!toConsole)
 			return;
-		
-		StringBuilder builder = new StringBuilder();
-		String[] roof = new String[w];
+
+		final StringBuilder builder = new StringBuilder();
+		final String[] roof = new String[w];
 		Arrays.fill(roof, " _");
-		for(String r : roof)
+		for(final String r : roof)
 			builder.append(r);
 		System.out.println(builder.toString());
-	} 
-	
+	}
+
 	private Cell[] out() {
-		if(!toConsole) 
-			return cells;
-		
-		StringBuilder builder = new StringBuilder();
+
+		final Cell[] copy = new Cell[w];
+		for(int index = 0; index < w; index++)
+			copy[index] = cells[index].copy();
+
+		if(!toConsole)
+			return copy;
+
+		final StringBuilder builder = new StringBuilder();
 		builder.append("|");
-		for(Cell c : cells) 
+		for(final Cell c : cells)
 			builder.append(c.toString());
 		System.out.println(builder.toString());
-		
-		return cells;
+
+		return copy;
 	}
-	
-	public void end(Cell[] row) {  
-		for(int i = 1; i < row.length; i++) { 
-			Cell current = row[i-1];
-			Cell next = row[i];
+
+	public Cell[] step(final int position) {
+		Cell[] link = null;
+		/* Join any cells not members of a set to their own unique set */
+		fill(cells);
+		/* Create right-walls, moving from left to right */
+		merge(cells);
+		/* Create bottom-walls, moving from left to right */
+		floor(cells);
+		if(h - position != 1) {
+			/* 5.A */
+			cells[cells.length - 1].setRight(true);
+			link = out();
+			next(cells);
+		}
+		else {
+			/* 5.B */
+			end(cells);
+			link = out();
+		}
+		return link;
+	}
+
+	private void end(final Cell[] row) {
+		for(int i = 1; i < row.length; i++) {
+			final Cell current = row[i - 1];
+			final Cell next = row[i];
 			current.setDown(true);
 			if(Cell.isContainsInSet(current.getSet(), next) == -1) {
 				current.setRight(false);
 				merge(current, next);
 			}
 		}
-		row[row.length-1].setDown(true);
-		row[row.length-1].setRight(true);
+		row[row.length - 1].setDown(true);
+		row[row.length - 1].setRight(true);
 	}
-	
-	public void fill(Cell[] row) { 
-		for(int i = 0; i < row.length; i++) {
-			Cell cell = row[i];
-			if(cell.getSet() == null) { 
+
+	private void fill(final Cell[] row) {
+		for(final Cell cell : row) {
+			if(cell.getSet() == null) {
 				cell.setSet(new ArrayList<Cell>());
 				cell.getSet().add(cell);
 			}
 		}
 	}
-	
-	public void merge(Cell[] row) {  
+
+	private void merge(final Cell[] row) {
 		for(int i = 1; i < row.length; i++) {
-			
-			Cell current = row[i-1];
-			Cell next = row[i];
+
+			final Cell current = row[i - 1];
+			final Cell next = row[i];
 
 			if(Cell.isContainsInSet(current.getSet(), next) != -1) {
 				current.setRight(true);
 				continue;
 			}
-			
-			if(randomizer.nextBoolean()) 
+
+			if(randomizer.nextBoolean())
 				current.setRight(true);
-			else   
+			else
 				merge(current, next);
 		}
 	}
-		
-	public void floor(Cell[] row) { 
+
+	private void floor(final Cell[] row) {
 		Cell.queryCallback(new Callback() {
 
 			@Override
-			public void action(List<Cell> set) {
-				if(set.size() > 1) { 
+			public void action(final List<Cell> set) {
+				if(set.size() > 1) {
 					int count = 0;
 					while(true) {
-						if(count == set.size()-1)
+						if(count == set.size() - 1)
 							break;
 						count++;
-						boolean flag = randomizer.nextBoolean();
+						final boolean flag = randomizer.nextBoolean();
 						if(!flag)
 							continue;
-						int g = randomizer.nextInt(set.size());
+						final int g = randomizer.nextInt(set.size());
 						set.get(g).setDown(true);
 					}
-				}		
+				}
 			}
 		}, row);
 	}
-	
-	public void next(Cell[] previousCells) {
-		for(int i = 0; i < previousCells.length; i++)	{  
-			Cell cell = previousCells[i];
+
+	private void next(final Cell[] previousCells) {
+		for(final Cell cell : previousCells) {
 			cell.setRight(false);
-			if(cell.isDown()) { 
+			if(cell.isDown()) {
 				cell.getSet().remove(Cell.isContainsInSet(cell.getSet(), cell));
 				cell.setSet(null);
 				cell.setDown(false);
 			}
 		}
 	}
-		
-	public static void main(String[] args) {
-		new EllersAlgorithm();
-	}
-				
+
 }
