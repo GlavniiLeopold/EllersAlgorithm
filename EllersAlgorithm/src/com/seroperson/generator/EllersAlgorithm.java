@@ -32,7 +32,7 @@ public class EllersAlgorithm {
 
 		/* Create the first row. No cells will be members of any set */
 		for(int i = 0; i < w; i++)
-			cells[i] = new Cell(i);
+			cells[i] = new Cell(i, 0);
 
 		outRoof();
 	}
@@ -164,6 +164,7 @@ public class EllersAlgorithm {
 	private void next(final Cell[] previousCells) {
 		for(final Cell cell : previousCells) {
 			cell.setRight(false);
+			cell.setY(cell.getY()+1);
 			if(cell.isDown()) {
 				cell.getSet().remove(Cell.isContainsInSet(cell.getSet(), cell));
 				cell.setSet(null);

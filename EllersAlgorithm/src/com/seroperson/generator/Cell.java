@@ -5,15 +5,16 @@ import java.util.List;
 
 public class Cell {
 
-	private int x = 0;
+	private int x = 0, y = 0;
 	private boolean right;
 	private boolean down;
 	private List<Cell> set;
 
-	public Cell(final int x) {
+	public Cell(final int x, final int y) {
 		right = false;
 		down = false;
 		this.x = x;
+		this.y = y;
 	}
 
 	public Cell(final Cell other) {
@@ -29,6 +30,10 @@ public class Cell {
 		return x;
 	}
 
+	public int getY() {  
+		return y;
+	}
+	
 	public boolean isRight() {
 		return right;
 	}
@@ -90,11 +95,20 @@ public class Cell {
 		for(final List<Cell> set : sets)
 			cb.action(set);
 	}
+	
+	public void setX(int x) { 
+		this.x = x;
+	}
 
+	public void setY(int y) { 
+		this.y = y;
+	}
+	
 	public void set(final Cell other) {
 		right = other.right;
 		down = other.down;
-		x = other.x;
+		setX(other.x);
+		setY(other.y);
 	}
 
 	@Override
